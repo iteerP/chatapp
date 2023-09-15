@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef } from 'react'
 import { AuthContext } from '../context/AuthContext';
 import { ChatContext } from '../context/ChatContext';
 
-export const Message = ({message}) => {
+const Message = ({message}) => {
 
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
@@ -10,7 +10,7 @@ export const Message = ({message}) => {
   const ref = useRef();
 
   useEffect(() => {
-    ref.current?.scrollIntoView({behavior:"smooth"})
+    ref.current?.scrollIntoView({behavior:"smooth"});
   }, [message])
   
   return (
@@ -24,7 +24,7 @@ export const Message = ({message}) => {
         { message.img && <img src= {message.img} alt="" /> }
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default Message;
