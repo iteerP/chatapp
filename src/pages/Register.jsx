@@ -8,9 +8,11 @@ import { useNavigate, Link } from "react-router-dom"
 
 export const Register = () => {
   const [err, setErr] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
+    setLoading(true);
     e.preventDefault();
 
     const displayName = e.target[0].value;
@@ -21,20 +23,17 @@ export const Register = () => {
     try{
       const res = await createUserWithEmailAndPassword(auth, email, password);
 
-      const storageRef = ref(storage, displayName);
+      const date = new Date().getTime();
+      const storageRef = ref(storage, `${displayName + date}`);
       
-      const uploadTask = uploadBytesResumable(storageRef, file);
-      
-      uploadTask.on(
-        (error) => {
-          setErr(true);
-        }, 
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
+      await uploadBytesResumable(storageRef, file).then(() => {
+        getDownloadURL(storageRef).then(async (downloadURL) => {
+          try {
             await updateProfile(res.user, {
               displayName,
               photoURL: downloadURL,
             });
+
             await setDoc(doc(db, "users", res.user.uid), {
               uid: res.user.uid,
               displayName,
@@ -44,13 +43,16 @@ export const Register = () => {
 
             await setDoc(doc(db, "userChats", res.user.uid), {});
             navigate("/");
-
-          });
-        }
-      );
-
-    } catch(err) {
+          } catch (err) {
+            console.log(err);
+            setErr(true);
+            setLoading(false);
+          }
+        });
+      });
+    } catch (err) {
       setErr(true);
+      setLoading(false);
     }
   };
   
